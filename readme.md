@@ -44,3 +44,29 @@ For stored procedures or repeatable migrations—migrations Flyway will apply ev
 R: Indicates a repeateable migration
 description: A clear, concise description of the migration content. Avoid using version numbers, as these will be reapplied whenever they change. 
 `R_Get_Events.sql`
+
+
+# Example usage:
+```
+import DatabaseLibrary from ".";
+
+let config = {
+    "url":"your database url",
+    "user":"username",
+    "password":"password"
+}
+
+const db_config = new DatabaseLibrary(config)
+
+const query = "select * from events where location = $1"
+// Using $1, $2, etc., for parameters to prevent SQL injection and ensure safe query execution.
+// These placeholders are replaced with values in the params array when the query is executed.
+const params = ['Test Location']
+async function runQuery(){
+    const rows = await db_config.execute(query, params)
+    console.log(rows)
+}
+
+runQuery()
+
+```
