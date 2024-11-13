@@ -1,30 +1,29 @@
 import { Client } from 'pg';
 
+interface DBConfig{
+  url: string;
+  user: string;
+  password: string;
+}
 class DatabaseLibrary {
-  private client: Client;
+  private clientConfig: DBConfig;
 
-  constructor() {
-    const connectionString = process.env.DATABASE_URL
-    if (!connectionString) {
-      throw new Error('DATABASE_URL environment variable is not defined');
+  constructor(config: DBConfig) {
+    if (!config || !config.url || !config.user || !config.password) {
+      throw new Error('Database configuration is required and must include url, user, and password');
     }
 
-    this.client = new Client({
+    this.clientConfig = config;
+  }
+
+  private createClient(): Client {
+    const connectionString = `postgres://${this.clientConfig.user}:${(this.clientConfig.password)}@${this.clientConfig.url}`;
+    return new Client({
       connectionString,
       ssl: { rejectUnauthorized: false },
     });
   }
 
-
-  public async connect() {
-    try {
-      await this.client.connect();
-      console.log('Connected to the database');
-    } catch (error) {
-      console.error('Failed to connect to the database:', error);
-      throw error;
-    }
-  }
 
   /**
    * @param {string} query - SQL query string.
@@ -32,17 +31,22 @@ class DatabaseLibrary {
    * @returns {Promise<any[]>} - Query result rows.
    */
   public async execute(query: string, params: any[] = []): Promise<any[]> {
-    const result = await this.client.query(query, params);
-    return result.rows;
+    const client =  this.createClient();
+    try{
+      await client.connect()
+      const result = await client.query(query, params);
+      return result.rows;
+    }
+    catch (error){
+      console.error('Query Execution Failed:', error);
+      throw error;
+    }
+    finally{
+      await client.end();
+      console.log('Database connection closed');
+    }
   }
 
-  /**
-   * Close the database connection
-   */
-  public async close(): Promise<void> {
-    await this.client.end();
-    console.log('Database connection closed');
-  }
 }
 
 export default DatabaseLibrary;
