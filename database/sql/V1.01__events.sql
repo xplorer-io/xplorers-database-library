@@ -1,5 +1,3 @@
-DROP TABLE IF EXISTS Events;
-
 CREATE TABLE Events (
     id SERIAL PRIMARY KEY,
     userId INT,

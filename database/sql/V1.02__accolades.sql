@@ -1,5 +1,3 @@
-DROP TABLE IF EXISTS Accolades;
-
 CREATE TABLE Accolades (
     id SERIAL PRIMARY KEY,
     fullName VARCHAR(255),
